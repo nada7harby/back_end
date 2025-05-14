@@ -83,7 +83,7 @@ const login = async (req, res) => {
   
       await user.save();
   
-      const resetLink = `http://localhost:5000/api/requests/reset-password/${resetToken}`;
+      const resetLink = `https://backend-production-816c.up.railway.app/api/requests/reset-password/${resetToken}`;
       const subject = 'Reset your password';
       const html = `
         <p>We received a request to reset your password.</p>
