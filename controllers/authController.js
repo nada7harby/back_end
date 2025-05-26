@@ -189,16 +189,6 @@ const resetPassword = async (req, res) => {
     res.status(500).json({ message: 'Something went wrong' });
   }
 };
-const serveResetForm = (req, res) => {
-  const { token } = req.params;
-  res.send(`
-      <form action="/api/requests/reset-password/${token}" method="POST">
-        <input type="password" name="newPassword" placeholder="New Password" required />
-        <input type="password" name="confirmPassword" placeholder="Confirm Password" required />
-        <button type="submit">Reset Password</button>
-      </form>
-    `);
-};
 
 const getAllUsers = async (req, res) => {
   try {
@@ -222,4 +212,4 @@ const getUserById = async (req, res) => {
   }
 };
 
-module.exports = { signup, login, resetPassword, forgotPassword, serveResetForm, getAllUsers, getUserById, updateUser };
+module.exports = { signup, login, resetPassword, forgotPassword, getAllUsers, getUserById, updateUser };
