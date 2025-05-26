@@ -85,7 +85,7 @@ router.get('/users/:id', getUserById);
 router.put('/users/:id', authMiddleware, updateUser);  
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password/:token', resetPassword);
-router.get('/reset-password/:token', serveResetForm);
+//router.get('/reset-password/:token', serveResetForm);
 
 router.get('/dashboard', authorizeAdmin, (req, res) => {
   res.json({ message: 'Welcome to the admin dashboard 🎉' });
