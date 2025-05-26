@@ -40,6 +40,18 @@ const requestSchema = new mongoose.Schema({
     message: String,
     reportFile: String,
     date: Date
+  },
+  updateMessage: {
+    type: String,
+    default: null
+  },
+  isUpdated: {
+    type: Boolean,
+    default: false
+  },
+  updatedAt: {
+    type: Date,
+    default: null
   }
   
 }, { timestamps: true });
