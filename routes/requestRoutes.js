@@ -13,14 +13,9 @@ const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET;
 
-router.get('/protected-route', authMiddleware, (req, res) => {
-    res.status(200).json({ message: 'You have access to this route' });
-  });
 
 router.get('/me', authMiddleware, getCurrentUser);
-router.post(
-  '/',
-  authMiddleware,
+router.post('/', authMiddleware,
   upload.fields([
     { name: 'consentForm', maxCount: 1 },
     { name: 'idCard', maxCount: 1 },
@@ -28,10 +23,7 @@ router.post(
   ]),
   createRequest
 );
-
-router.put(
-  '/:id',
-  authMiddleware,
+router.put('/:id', authMiddleware,
   upload.fields([
     { name: 'consentForm', maxCount: 1 },
     { name: 'idCard', maxCount: 1 },
