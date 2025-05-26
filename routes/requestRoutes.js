@@ -3,7 +3,7 @@ const router = express.Router();
 const { upload, createRequest, getAllRequests, replyToRequest, getUserRequests, updateRequest, getRequestById  } = require('../controllers/requestController');
 const authMiddleware = require('../middlewares/authMiddleware');
 //const authorizeAdmin = require('../middlewares/authorizeAdmin');
-const { signup, login, forgotPassword, resetPassword, getAllUsers, getUserById, updateUser } = require('../controllers/authController');
+const { signup, login, forgotPassword, resetPassword, getAllUsers, getUserById, updateUser, getCurrentUser } = require('../controllers/authController');
 const passport = require('passport');
 const User = require('../models/userModel');
 //const Conversation = require('../models/Conversation');
@@ -17,34 +17,7 @@ router.get('/protected-route', authMiddleware, (req, res) => {
     res.status(200).json({ message: 'You have access to this route' });
   });
 
-  router.get('/me', async (req, res) => {
-    try {
-      const authHeader = req.headers.authorization;
-      if (!authHeader) return res.status(401).json({ message: 'No token' });
-  
-      const token = authHeader.split(' ')[1];
-      const decoded = jwt.verify(token, JWT_SECRET);
-  
-      const user = await User.findById(decoded.id);
-      if (!user) return res.status(404).json({ message: 'User not found' });
-  
-      res.json({
-        user: {
-          id: user._id,
-          firstname: user.firstname,
-          lastname: user.lastname,
-          email: user.email,
-          image: user.image,
-          role: user.role,
-          googleId: user.googleId || null,
-          password: user.password ? 'set' : null
-        }
-      });
-    } catch (err) {
-      res.status(401).json({ message: 'Invalid token' });
-    }
-  });
-
+router.get('/me', authMiddleware, getCurrentUser);
 router.post(
   '/',
   authMiddleware,

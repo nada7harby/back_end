@@ -211,5 +211,27 @@ const getUserById = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+const getCurrentUser = async (req, res) => {
+  try {
+    const userId = req.userId; 
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
-module.exports = { signup, login, resetPassword, forgotPassword, getAllUsers, getUserById, updateUser };
+    res.json({
+      user: {
+        id: user._id,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        email: user.email,
+        image: user.image,
+        role: user.role,
+        googleId: user.googleId || null,
+        password: user.password ? 'set' : null,
+      },
+    });
+  } catch (err) {
+    res.status(401).json({ message: 'Invalid token' });
+  }
+};
+
+module.exports = { signup, login, resetPassword, forgotPassword, getAllUsers, getUserById, updateUser, getCurrentUser };
