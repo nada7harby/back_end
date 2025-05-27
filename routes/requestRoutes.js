@@ -21,6 +21,7 @@ router.post('/', authMiddleware,
   ]),
   createRequest
 );
+router.get('/conversations', getAllConversations);
 router.get('/users', getAllUsers);
 router.put('/:id', authMiddleware,
   upload.fields([
@@ -61,7 +62,7 @@ router.post('/contact', sendContactMessage);
 router.post('/contactreply/:id', replyToContactMessage);
 
 router.post('/messages', sendMessage);
-router.get('/conversations', getAllConversations);
+
 router.get('/conversation/:conversationId', getMessagesByConversationId);
 
 module.exports = router;
