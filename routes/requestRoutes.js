@@ -21,6 +21,7 @@ router.post('/', authMiddleware,
   ]),
   createRequest
 );
+router.get('/contact', getAllMessages);
 router.get('/conversations', getAllConversations);
 router.get('/users', getAllUsers);
 router.put('/:id', authMiddleware,
