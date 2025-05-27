@@ -51,7 +51,7 @@ router.get('/auth/google/callback',
   passport.authenticate('google', { session: false, failureRedirect: '/login' }),
   (req, res) => {
     const token = jwt.sign({ id: req.user._id }, JWT_SECRET, { expiresIn: '1h' });
-    res.redirect(`http://localhost:3000/google-redirect?token=${token}`);
+    res.redirect(`https://nada7harby.github.io/Verfiaction/google-redirect.html?token=${token}`);
   }
 );
 
