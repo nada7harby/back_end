@@ -6,10 +6,7 @@ const authMiddleware = require('../middlewares/authMiddleware');
 const { signup, login, forgotPassword, resetPassword, getAllUsers, getUserById, updateUser, getCurrentUser } = require('../controllers/authController');
 const passport = require('passport');
 const User = require('../models/userModel');
-//const Conversation = require('../models/Conversation');
-//const Message = require('../models/Message');
-//const ContactMessage = require('../models/ContactMessage');
-//const { sendContactNotification, sendReplyEmail } = require('../utils/emailService');
+const {sendMessage, getAllConversations, getMessagesByConversationId} = require('../controllers/conversationController');
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -33,14 +30,6 @@ router.put('/:id', authMiddleware,
 );
 router.get('/', getAllRequests);
 router.put('/:id/reply', upload.single('reportFile'), replyToRequest);
-router.get('/contact', async (req, res) => {
-    try {
-      const messages = await ContactMessage.find().sort({ createdAt: -1 });
-      res.status(200).json({ messages });
-    } catch (error) {
-      res.status(500).json({ message: 'Server error' });
-    }
-});
 router.get('/:id', getRequestById);
 router.get('/user/:userId', getUserRequests);
 router.post('/signup', signup);
@@ -65,88 +54,6 @@ router.get('/auth/google/callback',
   }
 );
 
-router.post('/messages', async (req, res) => {
-  try {
-    const { requestId, userId, messageText, senderRole } = req.body;
-    let conversation = await Conversation.findOne({ requestId });
-
-    if (!conversation) {
-      conversation = new Conversation({ requestId, userId });
-      await conversation.save();
-    }
-
-    const message = new Message({
-      conversationId: conversation._id,
-      senderRole,
-      messageText
-    });
-
-    await message.save();
-
-    res.status(201).json({ message: 'Message sent successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-router.get('/conversations', async (req, res) => {
-  try {
-    const conversations = await Conversation.find()
-      .populate('userId', 'name email')
-      .populate('requestId', 'title');
-
-    res.status(200).json({ conversations });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-router.get('/conversation/:conversationId', async (req, res) => {
-  try {
-    const { conversationId } = req.params;
-
-    const messages = await Message.find({ conversationId }).sort({ createdAt: 1 });
-
-    res.status(200).json({ messages });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-router.post('/contact', async (req, res) => {
-  try {
-    const { name, email, messageText} = req.body;
-
-    const message = new ContactMessage({ name, email, messageText});
-    await message.save();
-
-    await sendContactNotification({ name, email, messageText });
-
-    res.status(201).json({ message: 'Message saved successfully' });
-  } catch (error) {
-    console.error('EMAIL SEND ERROR:', error.message, error.stack);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-router.post('/contactreply/:id', async (req, res) => {
-  try {
-    const messageId = req.params.id;
-    const { replyText } = req.body;
-
-    const message = await ContactMessage.findById(messageId);
-    if (!message) {
-      return res.status(404).json({ message: 'Message not found' });
-    }
-
-    message.reply = replyText;
-    message.repliedAt = new Date();
-    await message.save();
-
-    await sendReplyEmail(message.email, replyText);
-    res.status(200).json({ message: 'Reply sent successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-module.exports = router;
+router.post('/messages', sendMessage);
+router.get('/conversations', getAllConversations);
+router.get('/conversation/:conversationId', getMessagesByConversationId);
