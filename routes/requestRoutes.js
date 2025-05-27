@@ -57,3 +57,5 @@ router.get('/auth/google/callback',
 router.post('/messages', sendMessage);
 router.get('/conversations', getAllConversations);
 router.get('/conversation/:conversationId', getMessagesByConversationId);
+
+module.exports = router;
