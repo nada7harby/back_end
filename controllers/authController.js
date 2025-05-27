@@ -48,7 +48,7 @@ const signup = async (req, res) => {
     email,
     password: hashedPassword,
     role: 'user',
-    image: `https://ui-avatars.com/api/?name=${firstname}+${lastname}&background=random&length=2`
+    image: `https://ui-avatars.com/api/?name=${firstname}+${lastname}&background=random&length=1`
   });
   await newUser.save();
   res.status(201).json({ message: 'User registered successfully. Please login.' });

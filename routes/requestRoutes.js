@@ -7,6 +7,7 @@ const { signup, login, forgotPassword, resetPassword, getAllUsers, getUserById, 
 const passport = require('passport');
 const User = require('../models/userModel');
 const {sendMessage, getAllConversations, getMessagesByConversationId} = require('../controllers/conversationController');
+const {getAllMessages, sendContactMessage, replyToContactMessage} = require('../controllers/contactController');
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -53,6 +54,10 @@ router.get('/auth/google/callback',
     res.redirect(`http://localhost:3000/google-redirect?token=${token}`);
   }
 );
+
+router.get('/contact', getAllMessages);
+router.post('/contact', sendContactMessage);
+router.post('/contactreply/:id', replyToContactMessage);
 
 router.post('/messages', sendMessage);
 router.get('/conversations', getAllConversations);

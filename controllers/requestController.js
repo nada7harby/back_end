@@ -62,7 +62,6 @@ const updateRequest = async (req, res) => {
     const requestId = req.params.id;
     const userId = req.userId;
 
-    // نجيب الطلب من الداتا بيز
     const existingRequest = await Request.findById(requestId);
     if (!existingRequest) {
       return res.status(404).json({ message: 'Request not found' });
@@ -78,7 +77,6 @@ const updateRequest = async (req, res) => {
       internalRef, company, contact, contactEmail, comment, updateMessage
     } = req.body;
 
-    // تحديث الحقول، لو موجودة في الطلب الجديد، وإلا نسيب القديم
     existingRequest.lastName = lastName || existingRequest.lastName;
     existingRequest.givenLastName = givenLastName || existingRequest.givenLastName;
     existingRequest.firstName = firstName || existingRequest.firstName;
