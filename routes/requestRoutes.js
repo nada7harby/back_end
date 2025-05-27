@@ -21,6 +21,7 @@ router.post('/', authMiddleware,
   ]),
   createRequest
 );
+router.get('/users', getAllUsers);
 router.put('/:id', authMiddleware,
   upload.fields([
     { name: 'consentForm', maxCount: 1 },
@@ -35,7 +36,7 @@ router.get('/:id', getRequestById);
 router.get('/user/:userId', getUserRequests);
 router.post('/signup', signup);
 router.post('/login', login);
-router.get('/users', getAllUsers);        
+       
 router.get('/users/:id', getUserById);
 router.put('/users/:id', authMiddleware, updateUser);  
 router.post('/forgot-password', forgotPassword);
