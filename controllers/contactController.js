@@ -1,5 +1,5 @@
 const ContactMessage = require('../models/ContactMessage');
-const { sendContactNotification, sendReplyEmail } = require('../utils/email');
+const { sendContactNotification, sendReplyEmail } = require('../utils/emailService');
 
 const getAllMessages = async (req, res) => {
   try {
