@@ -38,6 +38,7 @@ const signup = async (req, res) => {
       user.lastname = lastname;
       user.password = await bcrypt.hash(password, 10);
       user.image = user.image;
+      await user.save();
       return res.status(200).json({ message: 'Account completed successfully. You can now login with email and password.' });
     }
   }
