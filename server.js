@@ -7,11 +7,12 @@ const passport = require('passport');
 require('./config/passport');
 const requestRoutes = require('./routes/requestRoutes');
 const app = express();
+const path = require('path');
 
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.urlencoded({ extended: true }));
 
 /*app.use(session({
