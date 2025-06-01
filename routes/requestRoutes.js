@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { upload, createRequest, getAllRequests, replyToRequest, getUserRequests, updateRequest, getRequestById  } = require('../controllers/requestController');
+const upload = require('../config/s3Storage');
+const {createRequest, getAllRequests, replyToRequest, getUserRequests, updateRequest, getRequestById  } = require('../controllers/requestController');
 const authMiddleware = require('../middlewares/authMiddleware');
 //const authorizeAdmin = require('../middlewares/authorizeAdmin');
 const { signup, login, forgotPassword, resetPassword, getAllUsers, getUserById, updateUser, getCurrentUser } = require('../controllers/authController');

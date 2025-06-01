@@ -1,16 +1,5 @@
 const Request = require('../models/requestModel');
-const multer = require('multer');
-const path = require('path');
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/')
-  },
-  filename: function (req, file, cb) {
-    cb(null, `${Date.now()}-${file.originalname}`)
-  }
-});
-const upload = multer({ storage: storage });
 const createRequest = async (req, res) => {
   try {
     const {
@@ -42,9 +31,9 @@ const createRequest = async (req, res) => {
       comment,
       userId: req.userId,
       files: {
-        consentForm: req.files?.['consentForm']?.[0]?.path || null,
-        idCard: req.files?.['idCard']?.[0]?.path || null,
-        diploma: req.files?.['diploma']?.[0]?.path || null
+        consentForm: req.files?.['consentForm']?.[0]?.location || null,
+        idCard: req.files?.['idCard']?.[0]?.location || null,
+        diploma: req.files?.['diploma']?.[0]?.location || null
       }
       
     });
@@ -104,9 +93,9 @@ const updateRequest = async (req, res) => {
     }
 
     if (req.files) {
-      existingRequest.files.consentForm = req.files['consentForm']?.[0]?.path || existingRequest.files.consentForm;
-      existingRequest.files.idCard = req.files['idCard']?.[0]?.path || existingRequest.files.idCard;
-      existingRequest.files.diploma = req.files['diploma']?.[0]?.path || existingRequest.files.diploma;
+      existingRequest.files.consentForm = req.files['consentForm']?.[0]?.location || existingRequest.files.consentForm;
+      existingRequest.files.idCard = req.files['idCard']?.[0]?.location || existingRequest.files.idCard;
+      existingRequest.files.diploma = req.files['diploma']?.[0]?.location || existingRequest.files.diploma;
     }
     existingRequest.updatedAt = new Date();
     await existingRequest.save();
@@ -155,7 +144,7 @@ const replyToRequest = async (req, res) => {
       request.reply = {
         message,
         date: new Date(),
-        reportFile: req.file?.path 
+        reportFile: req.file?.location 
       };
   
       await request.save();
@@ -176,4 +165,4 @@ const replyToRequest = async (req, res) => {
     }
   };
   
-module.exports = { upload, createRequest, getAllRequests, replyToRequest, getUserRequests, updateRequest, getRequestById};
+module.exports = {createRequest, getAllRequests, replyToRequest, getUserRequests, updateRequest, getRequestById};
