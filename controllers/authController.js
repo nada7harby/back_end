@@ -135,7 +135,7 @@ const forgotPassword = async (req, res) => {
 
     await user.save();
 
-    const resetLink = `https://nada7harby.github.io/Verfiaction/Reset_password.html?token=${resetToken}`;
+    const resetLink = `https://spatrak.com/Reset_password.html?token=${resetToken}`;
     const subject = 'Reset your password';
     const html = `
         <p>We received a request to reset your password.</p>
