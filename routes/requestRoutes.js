@@ -11,6 +11,10 @@ const {sendMessage, getAllConversations, getMessagesByConversationId} = require(
 const {getAllMessages, sendContactMessage, replyToContactMessage} = require('../controllers/contactController');
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET;
+                          /*PAYMENT*/
+const { checkout,successStatus,cancel ,markRequestPaid } = require('../controllers/payment');
+ 
+
 
 
 router.get('/me', authMiddleware, getCurrentUser);
@@ -66,5 +70,13 @@ router.post('/contactreply/:id', replyToContactMessage);
 router.post('/messages', sendMessage);
 
 router.get('/conversation/:conversationId', getMessagesByConversationId);
+
+
+                                   /*PAYMENT*/ 
+
+router.post('/checkout', authMiddleware, checkout);
+router.get('/success-status', authMiddleware, successStatus);
+router.get('/cancel', authMiddleware, cancel);
+router.post('/mark-request-paid', authMiddleware, markRequestPaid);
 
 module.exports = router;

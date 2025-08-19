@@ -52,6 +52,10 @@ const requestSchema = new mongoose.Schema({
   updatedAt: {
     type: Date,
     default: null
+  },
+  paid: {
+    type: Boolean,
+    default: false
   }
   
 }, { timestamps: true });
