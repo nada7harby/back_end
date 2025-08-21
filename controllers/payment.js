@@ -34,8 +34,8 @@ const checkout = async (req, res) => {
         },
       ],
       mode: 'payment',
-      success_url: `http://localhost:3000/success-status?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `http://localhost:3000/cancel`,
+      success_url: `https://spatrak.com/paymentSuccess.html?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `https://spatrak.com/paymentCancel.html`,
       metadata: {
             packageId: packageId,
             requestId: requestId || null
