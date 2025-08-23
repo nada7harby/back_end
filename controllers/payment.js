@@ -54,43 +54,51 @@ const checkout = async (req, res) => {
 }
 
 const successStatus= async (req, res) => {
-
   try {
     const { session_id } = req.query;
-    if (!session_id) return res.status(400).json({ error: "Missing session_id" });
+    console.log("Session ID  --->  " , session_id);
+    if (!session_id) {
+      return res.status(400).json({ error: "Missing session_id" }); // ✅ return
+    }
 
     const session = await stripe.checkout.sessions.retrieve(session_id);
+    console.log("Stripe session details---> " , session);
 
     // Check if paid
     if (session.payment_status === "paid") {
-
       const packageId = session.metadata.packageId;
       const SelectedPackage = PACKAGE_LOOKUP[packageId];
       const email = session.customer_details.email;
       let requestId = session.metadata.requestId;
 
       if (!SelectedPackage) {
-        return res.status(400).json({ error: "Invalid package metadata" });
+        return res.status(400).json({ error: "Invalid package metadata" }); // ✅ return
       }
 
-      //  update or create user in MongoDB
+      // update or create user in MongoDB
       const user = await User.findOneAndUpdate(
         { email },
         { $inc: { remainingRequests: SelectedPackage.credits } },
         { upsert: true, new: true }
       );
 
-      //update request status
-      if (requestId) {
+      const mongoose = require("mongoose");
+
+      if (requestId && mongoose.Types.ObjectId.isValid(requestId)) {
         // Mark request as paid
         await Request.findByIdAndUpdate(requestId, { paid: true });
 
         // Deduct 1 credit
         user.remainingRequests -= 1;
         await user.save();
+      } else if (requestId) {
+        return res.json({   // ✅ لازم return
+          success: false,
+          message: "Invalid request ID"
+        });
       }
 
-      res.json({
+      return res.json({   // ✅ هنا برضو return
         success: true,
         email: session.customer_details.email,
         name: session.customer_details.name,
@@ -101,12 +109,15 @@ const successStatus= async (req, res) => {
         requestPaid: requestId || null
       });
     } else {
-      res.json({ success: false });
+      return res.json({ success: false , message: "Payment not successful" }); // ✅ return
     }
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("SuccessStatus error:", err);
+    return res.status(500).json({ error: err.message , message: "error in Success Status" }); // ✅ return
   }
-}
+};
+
+
 
 const markRequestPaid = async (req, res) => {
   try {

@@ -39,7 +39,6 @@ router.put('/:id', authMiddleware,
 );
 router.get('/', getAllRequests);
 router.put('/:id/reply', upload.single('reportFile'), replyToRequest);
-router.get('/:id', getRequestById);
 router.get('/user/:userId', getUserRequests);
 router.post('/signup', signup);
 router.post('/login', login);
@@ -75,8 +74,9 @@ router.get('/conversation/:conversationId', getMessagesByConversationId);
                                    /*PAYMENT*/ 
 
 router.post('/checkout', authMiddleware, checkout);
-router.get('/success-status', authMiddleware, successStatus);
+router.get('/success-status', successStatus);
 router.get('/cancel', authMiddleware, cancel);
 router.post('/mark-request-paid', authMiddleware, markRequestPaid);
+router.get('/:id', getRequestById);
 
 module.exports = router;
