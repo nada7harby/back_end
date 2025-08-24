@@ -45,7 +45,9 @@ const {
   checkout, 
   successStatus, 
   cancel, 
-  markRequestPaid 
+  markRequestPaid ,
+  payments,
+  deleteAllPayments
 } = require('../controllers/payment');
 
 
@@ -105,9 +107,11 @@ router.get('/conversation/:conversationId', getMessagesByConversationId);
 
 /* ================= PAYMENT ================= */
 router.post('/checkout', authMiddleware, checkout);
-router.get('/success-status', successStatus);
+router.get('/success-status',authMiddleware, successStatus);
 router.get('/cancel', authMiddleware, cancel);
 router.post('/mark-request-paid', authMiddleware, markRequestPaid);
+router.get('/payments', authMiddleware, payments);
+router.delete('/payments', authMiddleware, deleteAllPayments);
 
 /* ================= DYNAMIC ROUTES (KEEP LAST) ================= */
 router.get('/:id', getRequestById);

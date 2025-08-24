@@ -81,7 +81,8 @@ const login = async (req, res) => {
       image: user.image,
       role: user.role,
       googleId: user.googleId,
-      password: user.password ? 'set' : null
+      password: user.password ? 'set' : null,
+      remainingRequests: user.remainingRequests
 
     }
   });

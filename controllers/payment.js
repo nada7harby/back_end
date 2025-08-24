@@ -1,7 +1,8 @@
 const User = require('../models/userModel');
 const Request = require('../models/requestModel');
+const payment = require('../models/payment');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-
+const mongoose = require("mongoose");
 
 const PACKAGE_LOOKUP = {
   "25": { name: "Single Pack", price: 30.99 * 100, credits: 1 },
@@ -12,8 +13,13 @@ const PACKAGE_LOOKUP = {
 const checkout = async (req, res) => {
 
   try {
-    const { packageId ,requestId} = req.body;
-    
+    const { packageId, requestId } = req.body;
+    const loggedInUser = req.userId;
+    if (!loggedInUser) {
+      return res.status(404).json({ error: "Logged in user not found" });
+    }
+    //console.log("User making payment:", loggedInUser);
+
     const SelectedPackage = PACKAGE_LOOKUP[packageId] || {};
 
     if (!SelectedPackage) {
@@ -30,16 +36,17 @@ const checkout = async (req, res) => {
             unit_amount: SelectedPackage.price,
           },
           quantity: 1,
-          
+
         },
       ],
       mode: 'payment',
       success_url: `https://spatrak.com/paymentSuccess.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `https://spatrak.com/paymentCancel.html`,
       metadata: {
-            packageId: packageId,
-            requestId: requestId || null
-          }
+        packageId: packageId,
+        requestId: requestId || null,
+        loggedInUserId: loggedInUser
+      }
     });
 
     res.json({ url: session.url });
@@ -53,71 +60,137 @@ const checkout = async (req, res) => {
 
 }
 
-const successStatus= async (req, res) => {
+const successStatus = async (req, res) => {
   try {
+    const loggedInUserId = req.userId;
+
     const { session_id } = req.query;
-    console.log("Session ID  --->  " , session_id);
+    //console.log("Session ID  --->  " , session_id);
     if (!session_id) {
       return res.status(400).json({ error: "Missing session_id" }); // ✅ return
     }
 
     const session = await stripe.checkout.sessions.retrieve(session_id);
-    console.log("Stripe session details---> " , session);
+    //console.log("Stripe session details---> " , session);
+
+    
+    // before checking if it is paid or not FIRST check if its already processed
+    const alreadyProcessed = await payment.findOne({ sessionId: session_id });
+    if (alreadyProcessed) 
+      {
+       return res.json({
+        message: "Payment already processed",
+      });
+    }
 
     // Check if paid
     if (session.payment_status === "paid") {
       const packageId = session.metadata.packageId;
       const SelectedPackage = PACKAGE_LOOKUP[packageId];
-      const email = session.customer_details.email;
+      
+      
       let requestId = session.metadata.requestId;
 
-      if (!SelectedPackage) {
+      if (!SelectedPackage)
+         {
         return res.status(400).json({ error: "Invalid package metadata" }); // ✅ return
       }
 
-      // update or create user in MongoDB
-      const user = await User.findOneAndUpdate(
-        { email },
-        { $inc: { remainingRequests: SelectedPackage.credits } },
-        { upsert: true, new: true }
-      );
 
-      const mongoose = require("mongoose");
+
+
+
+      // update user in MongoDB
+      if(loggedInUserId  && mongoose.Types.ObjectId.isValid(loggedInUserId))
+        {
+       await User.findByIdAndUpdate(
+        { _id: loggedInUserId },
+        { $inc: { remainingRequests: SelectedPackage.credits } },
+        { new: true }
+       
+      );
+      } else {
+        
+        console.log("User not found:", loggedInUserId);
+        return res.status(404).json({ error: "User not found" }); 
+      }
+      
+
+       const userloggedIn = await User.findById({ _id: loggedInUserId });
 
       if (requestId && mongoose.Types.ObjectId.isValid(requestId)) {
         // Mark request as paid
-        await Request.findByIdAndUpdate(requestId, { paid: true });
+        await Request.findByIdAndUpdate(requestId, { paid: true }, { new: true } );
 
         // Deduct 1 credit
-        user.remainingRequests -= 1;
-        await user.save();
+        userloggedIn.remainingRequests -= 1;
+        await userloggedIn.save();
       } else if (requestId) {
-        return res.json({   // ✅ لازم return
+        return res.json({   
           success: false,
           message: "Invalid request ID"
         });
       }
 
-      return res.json({   // ✅ هنا برضو return
+
+
+      //save payment with logged in user data NOT stripe data
+     
+      await payment.create({
+        sessionId: session_id,
         success: true,
-        email: session.customer_details.email,
-        name: session.customer_details.name,
+        email: userloggedIn.email,
+        name: (userloggedIn.firstname + " " + userloggedIn.lastname),
+        packageSelected: SelectedPackage.name,
+        amount: session.amount_total / 100,
+        currency: session.currency,
+        stripeName: session.customer_details.name,
+        stripeEmail: session.customer_details.email
+      });
+
+
+      return res.json({  
+        success: true,
+        stripeEmail: session.customer_details.email,
+        stripeName: session.customer_details.name,
+        name: (userloggedIn.firstname + " " + userloggedIn.lastname),
+        email: userloggedIn.email,
         amount: session.amount_total / 100,
         currency: session.currency,
         packageSelected: SelectedPackage.name,
-        remainingRequests: user.remainingRequests,
+        remainingRequests: userloggedIn.remainingRequests,
         requestPaid: requestId || null
       });
-    } else {
-      return res.json({ success: false , message: "Payment not successful" }); // ✅ return
+    }
+
+    else {
+      return res.json({ success: false, message: "Payment not successful" }); // ✅ return
     }
   } catch (err) {
     console.error("SuccessStatus error:", err);
-    return res.status(500).json({ error: err.message , message: "error in Success Status" }); // ✅ return
+    return res.status(500).json({ error: err.message, message: "error in Success Status" }); // ✅ return
   }
 };
 
 
+// GET all payments
+const payments = async (req, res) => {
+  try {
+    const payments = await payment.find().sort({ createdAt: -1 }); // newest first
+    res.json({
+      message : "Payments retrieved successfully",
+      count: payments.length,
+      data: payments
+    });
+  } catch (err) {
+    console.error("Error fetching payments:", err);
+    res.status(500).json({
+      success: false,
+      message: "Error retrieving payments",
+      error: err.message
+    });
+  }
+};
 
 const markRequestPaid = async (req, res) => {
   try {
@@ -168,9 +241,22 @@ const cancel = (req, res) => {
   res.json({ message: 'Payment canceled.' });
 }
 
+//delete all payments
+const deleteAllPayments = async (req, res) => {
+  try {
+    await payment.deleteMany({});
+    res.json({ message: "All payments deleted successfully." });
+  } catch (err) {
+    console.error("Error deleting payments:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 module.exports = {
   checkout,
   successStatus,
   markRequestPaid,
-  cancel
+  cancel,
+  payments,
+  deleteAllPayments
 };
